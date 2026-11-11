@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Hotel Manager Pro</title>
+    <!-- Web App & PWA Meta Tags for Mobile Phones -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hotel Pro">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- PWA Web App Manifest Data for Chrome Android -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        %22name%22:%22Hotel%20Manager%20Pro%22,
+        %22short_name%22:%22HotelPro%22,
+        %22start_url%22:%22.%22,
+        %22display%22:%22standalone%22,
+        %22background_color%22:%22%230f172a%22,
+        %22theme_color%22:%22%230f172a%22,
+        %22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/2942/2942801.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]
+    }">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Firebase App (Core) and Firestore SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtzwOW94exkmt_JHthKInXU3NjdyVKoEs",
+    authDomain: "online-shop-dcbea.firebaseapp.com",
+    projectId: "online-shop-dcbea",
+    storageBucket: "online-shop-dcbea.firebasestorage.app",
+    messagingSenderId: "113310368595",
+    appId: "1:113310368595:web:a7e86cf3c9ec162563d7a6"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Expose db and addDoc globally so your booking form can use them
+  window.db = db;
+  window.addDoc = addDoc;
+  window.collection = collection;
+</script>
+</head>
+<body class="bg-slate-900 text-slate-100 h-full font-sans antialiased flex flex-col items-center justify-start md:justify-center p-0 md:p-4 overflow-x-hidden overscroll-none select-none">
+
+    <!-- Toast Notification Box -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-200%] transition-transform duration-300 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm font-medium">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toast-message">Action completed successfully!</span>
+    </div>
+
+    <!-- Main App Container (Mobile Frame on Desktop, Full on Mobile) -->
+    <div class="w-full md:max-w-md h-full md:h-[880px] bg-slate-950 md:rounded-[40px] md:border-[8px] md:border-slate-800 shadow-2xl flex flex-col relative overflow-hidden">
+        
+        <!-- App Header -->
+        <header class="bg-slate-900/90 backdrop-blur-md px-5 py-4 border-b border-slate-800 flex items-center justify-between z-10 sticky top-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-hotel text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base text-slate-100 tracking-tight" id="header-hotel-name">Grand Azure Resort</h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="header-auth-status">Guest Mode</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <!-- Chrome Android PWA Install Button -->
+                <button id="pwa-install-btn" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-xl shadow-md flex items-center gap-1">
+                    <i class="fa-solid fa-download"></i> Install
+                </button>
+
+                <!-- Hotel Switcher Dropdown -->
+                <div class="relative">
+                    <select id="hotel-selector" onchange="switchHotel(this.value)" class="bg-slate-800 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+                        <!-- Dynamic hotel options -->
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content Area -->
+        <main id="main-content" class="flex-1 overflow-y-auto pb-24 scrollbar-none">
+            <!-- Dynamic Tab Content Injected Here -->
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 px-2 py-2 flex justify-around items-center z-20">
+            <button onclick="switchTab('overview')" id="nav-overview" class="flex flex-col items-center py-1 px-2.5 text-indigo-400 transition-colors">
+                <i class="fa-solid fa-chart-pie text-base mb-1"></i>
+                <span class="text-[9px] font-medium">Overview</span>
+            </button>
+            <button onclick="switchTab('book')" id="nav-book" class="flex flex-col items-center py-1 px-2.5 text-slate-400 hover:text-slate-200 transition-colors">
+                <i class="fa-solid fa-calendar-check text-base mb-1"></i>
+                <span class="text-[9px] font-medium">Book Now</span>
+            </button>
+            <button onclick="switchTab('gallery')" id="nav-gallery" class="flex flex-col items-center py-1 px-2.5 text-slate-400 hover:text-slate-200 transition-colors">
+                <i class="fa-solid fa-images text-base mb-1"></i>
+                <span class="text-[9px] font-medium">Gallery</span>
+            </button>
+            <button onclick="switchTab('amenities')" id="nav-amenities" class="flex flex-col items-center py-1 px-2.5 text-slate-400 hover:text-slate-200 transition-colors">
+                <i class="fa-solid fa-spa text-base mb-1"></i>
+                <span class="text-[9px] font-medium">Amenities</span>
+            </button>
+            <button onclick="switchTab('admin')" id="nav-admin" class="flex flex-col items-center py-1 px-2.5 text-slate-400 hover:text-slate-200 transition-colors">
+                <i class="fa-solid fa-shield-halved text-base mb-1"></i>
+                <span class="text-[9px] font-medium">Admin</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 relative shadow-2xl">
+            <!-- Dynamic Modal Content -->
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // State Management for Hotels, Bookings & Admin Session
+        const state = {
+            currentHotelId: 'hotel1',
+            currentTab: 'overview',
+            admin: {
+                isAuthenticated: false,
+                email: null
+            },
+            bookings: [
+                { id: 'BK-1082', hotelId: 'hotel1', guestName: 'Sarah Jenkins', email: 'sarah.j@example.com', checkIn: '2026-06-12', checkOut: '2026-06-18', room: 'Deluxe Ocean Suite ($350/n)', status: 'Confirmed' },
+                { id: 'BK-1083', hotelId: 'hotel2', guestName: 'Michael Chang', email: 'mchang@example.com', checkIn: '2026-12-01', checkOut: '2026-12-07', room: 'Alpine Master Chalet ($500/n)', status: 'Confirmed' }
+            ],
+            hotels: {
+                hotel1: {
+                    id: 'hotel1',
+                    name: 'Grand Azure Resort & Spa',
+                    tagline: 'Luxury beachfront escape with panoramic ocean vistas.',
+                    location: 'Malibu Coast, California',
+                    rating: '4.9',
+                    rooms: 120,
+                    status: 'Open & Fully Booked',
+                    banner: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+                    roomTypes: [
+                        { name: 'Deluxe Ocean Suite', price: 350 },
+                        { name: 'Beachfront Villa', price: 600 },
+                        { name: 'Standard King Room', price: 220 }
+                    ],
+                    gallery: [
+                        { id: 1, title: 'Infinity Pool', url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80' },
+                        { id: 2, title: 'Deluxe Suite', url: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=600&q=80' },
+                        { id: 3, title: 'Beachfront Dining', url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80' }
+                    ],
+                    amenities: [
+                        { id: 1, name: 'High-Speed Wi-Fi', icon: 'fa-wifi', category: 'Connectivity' },
+                        { id: 2, name: 'Infinity Pool', icon: 'fa-person-swimming', category: 'Leisure' },
+                        { id: 3, name: 'Luxury Spa & Sauna', icon: 'fa-spa', category: 'Wellness' },
+                        { id: 4, name: 'Valet Parking', icon: 'fa-car', category: 'Services' }
+                    ]
+                },
+                hotel2: {
+                    id: 'hotel2',
+                    name: 'Alpine Luxe Chalet',
+                    tagline: 'Secluded mountain sanctuary with ski-in/ski-out access.',
+                    location: 'Aspen, Colorado',
+                    rating: '4.8',
+                    rooms: 45,
+                    status: 'Winter Season Active',
+                    banner: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80',
+                    roomTypes: [
+                        { name: 'Alpine Master Chalet', price: 500 },
+                        { name: 'Mountain View Suite', price: 380 },
+                        { name: 'Cozy Fireplace Room', price: 250 }
+                    ],
+                    gallery: [
+                        { id: 1, title: 'Snowy Exterior', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80' },
+                        { id: 2, title: 'Fireplace Lounge', url: 'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?auto=format&fit=crop&w=600&q=80' }
+                    ],
+                    amenities: [
+                        { id: 1, name: 'High-Speed Wi-Fi', icon: 'fa-wifi', category: 'Connectivity' },
+                        { id: 2, name: 'Ski Locker & Rental', icon: 'fa-person-snowboarding', category: 'Leisure' },
+                        { id: 3, name: 'Heated Outdoor Jacuzzi', icon: 'fa-hot-tub-person', category: 'Wellness' }
+                    ]
+                }
+            }
+        };
+
+        // Utility: Show Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-message');
+            msg.innerText = message;
+            toast.classList.remove('translate-y-[-200%]');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-200%]');
+            }, 3000);
+        }
+
+        // Update Hotel Selector Options in Header
+        function updateHotelSelector() {
+            const selector = document.getElementById('hotel-selector');
+            selector.innerHTML = '';
+            const hotelKeys = Object.keys(state.hotels);
+            
+            hotelKeys.forEach((key, index) => {
+                const hotel = state.hotels[key];
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = `Hotel ${index + 1}: ${hotel.name.split(' ')[0]}`;
+                if (key === state.currentHotelId) opt.selected = true;
+                selector.appendChild(opt);
+            });
+        }
+
+        // Switch Active Hotel
+        function switchHotel(hotelId) {
+            if (!state.hotels[hotelId]) return;
+            state.currentHotelId = hotelId;
+            document.getElementById('hotel-selector').value = hotelId;
+            const hotel = state.hotels[hotelId];
+            document.getElementById('header-hotel-name').innerText = hotel.name;
+            renderCurrentView();
+            showToast(`Switched to ${hotel.name}`);
+        }
+
+        // Switch Tabs
+        function switchTab(tabName) {
+            state.currentTab = tabName;
+            ['overview', 'book', 'gallery', 'amenities', 'admin'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = "flex flex-col items-center py-1 px-2.5 text-indigo-400 transition-colors";
+                    } else {
+                        btn.className = "flex flex-col items-center py-1 px-2.5 text-slate-400 hover:text-slate-200 transition-colors";
+                    }
+                }
+            });
+            renderCurrentView();
+        }
+
+        // Render current view based on state
+        function renderCurrentView() {
+            updateHotelSelector();
+            const container = document.getElementById('main-content');
+            const hotel = state.hotels[state.currentHotelId] || Object.values(state.hotels)[0];
+            
+            if (hotel && state.currentHotelId !== hotel.id) {
+                state.currentHotelId = hotel.id;
+            }
+
+            if (!hotel) {
+                container.innerHTML = `
+                    <div class="p-8 text-center space-y-4">
+                        <i class="fa-solid fa-hotel text-4xl text-slate-600"></i>
+                        <h3 class="text-white font-bold">No Hotels Available</h3>
+                        <p class="text-xs text-slate-400">Please add a hotel in the Admin Console.</p>
+                        <button onclick="switchTab('admin')" class="bg-indigo-600 text-white text-xs px-4 py-2 rounded-xl">Go to Admin</button>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('header-hotel-name').innerText = hotel.name;
+            document.getElementById('header-auth-status').innerText = state.admin.isAuthenticated ? `Admin (${state.admin.email})` : 'Guest Mode';
+
+            if (state.currentTab === 'overview') {
+                container.innerHTML = `
+                    <div class="relative h-56 w-full">
+                        <img src="${hotel.banner}" alt="${hotel.name}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">${hotel.status}</span>
+                            <h2 class="text-xl font-bold text-white mt-1">${hotel.name}</h2>
+                            <p class="text-xs text-slate-300 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-location-dot text-indigo-400"></i> ${hotel.location}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-5">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-slate-900 border border-slate-800/80 p-3 rounded-2xl text-center">
+                                <i class="fa-solid fa-star text-amber-400 mb-1 text-base"></i>
+                                <div class="text-lg font-bold text-slate-100">${hotel.rating}</div>
+                                <div class="text-[10px] text-slate-400">Rating</div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800/80 p-3 rounded-2xl text-center">
+                                <i class="fa-solid fa-door-closed text-indigo-400 mb-1 text-base"></i>
+                                <div class="text-lg font-bold text-slate-100">${hotel.rooms}</div>
+                                <div class="text-[10px] text-slate-400">Rooms</div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800/80 p-3 rounded-2xl text-center">
+                                <i class="fa-solid fa-images text-emerald-400 mb-1 text-base"></i>
+                                <div class="text-lg font-bold text-slate-100">${hotel.gallery.length}</div>
+                                <div class="text-[10px] text-slate-400">Photos</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">About Property</h3>
+                            <p class="text-sm text-slate-300 leading-relaxed">${hotel.tagline}</p>
+                        </div>
+
+                        <button onclick="switchTab('book')" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm py-3 rounded-2xl shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-calendar-days"></i> Book Your Stay Now
+                        </button>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Featured Amenities (${hotel.amenities.length})</h3>
+                                <button onclick="switchTab('amenities')" class="text-xs text-indigo-400 font-medium hover:underline">View All</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${hotel.amenities.slice(0, 4).map(a => `
+                                    <div class="bg-slate-900 border border-slate-800/80 p-3 rounded-xl flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                                            <i class="fa-solid ${a.icon}"></i>
+                                        </div>
+                                        <span class="text-xs font-medium text-slate-200 truncate">${a.name}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (state.currentTab === 'book') {
+                container.innerHTML = `
+                    <div class="p-5 space-y-5">
+                        <div>
+                            <h2 class="font-bold text-lg text-white">Customer Reservation</h2>
+                            <p class="text-xs text-slate-400">Secure your stay at ${hotel.name}</p>
+                        </div>
+
+                        <form onsubmit="handleCustomerBooking(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+                                <input type="text" id="book-name" placeholder="John Doe" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+                                <input type="email" id="book-email" placeholder="john@example.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Check-in Date</label>
+                                    <input type="date" id="book-checkin" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Check-out Date</label>
+                                    <input type="date" id="book-checkout" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Select Room Type</label>
+                                <select id="book-room" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    ${hotel.roomTypes.map(r => `<option value="${r.name} ($${r.price}/n)">${r.name} - $${r.price} / night</option>`).join('')}
+                                </select>
+                            </div>
+
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-circle-check"></i> Complete Reservation
+                            </button>
+                        </form>
+                    </div>
+                `;
+            } else if (state.currentTab === 'gallery') {
+                container.innerHTML = `
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="font-bold text-lg text-white">Photo Gallery</h2>
+                                <p class="text-xs text-slate-400">${hotel.name}</p>
+                            </div>
+                            ${state.admin.isAuthenticated ? `
+                                <button onclick="openAddPhotoModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus"></i> Add Photo
+                                </button>
+                            ` : `
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2.5 py-1 rounded-lg">Admin login to edit</span>
+                            `}
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            ${hotel.gallery.map(photo => `
+                                <div class="group relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
+                                    <img src="${photo.url}" alt="${photo.title}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90 flex flex-col justify-end p-3">
+                                        <span class="text-xs font-semibold text-white truncate">${photo.title}</span>
+                                    </div>
+                                    ${state.admin.isAuthenticated ? `
+                                        <button onclick="deletePhoto(${photo.id})" class="absolute top-2 right-2 w-7 h-7 bg-red-600/80 backdrop-blur-md text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${hotel.gallery.length === 0 ? `
+                            <div class="text-center py-12 text-slate-500">
+                                <i class="fa-regular fa-images text-3xl mb-2"></i>
+                                <p class="text-xs">No photos uploaded yet.</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else if (state.currentTab === 'amenities') {
+                container.innerHTML = `
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="font-bold text-lg text-white">Hotel Amenities</h2>
+                                <p class="text-xs text-slate-400">${hotel.name}</p>
+                            </div>
+                            ${state.admin.isAuthenticated ? `
+                                <button onclick="openAddAmenityModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus"></i> Add Amenity
+                                </button>
+                            ` : `
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2.5 py-1 rounded-lg">Admin login required</span>
+                            `}
+                        </div>
+
+                        <div class="space-y-2.5 pt-1">
+                            ${hotel.amenities.map(amenity => `
+                                <div class="bg-slate-900 border border-slate-800/80 p-3.5 rounded-2xl flex items-center justify-between group hover:border-slate-700 transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-base">
+                                            <i class="fa-solid ${amenity.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-slate-200">${amenity.name}</h4>
+                                            <span class="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-400 rounded-md font-medium">${amenity.category}</span>
+                                        </div>
+                                    </div>
+                                    ${state.admin.isAuthenticated ? `
+                                        <button onclick="deleteAmenity(${amenity.id})" class="text-slate-500 hover:text-red-400 p-2 transition-colors">
+                                            <i class="fa-solid fa-trash-can text-sm"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (state.currentTab === 'admin') {
+                if (!state.admin.isAuthenticated) {
+                    container.innerHTML = `
+                        <div class="p-6 space-y-6">
+                            <div class="text-center pt-4">
+                                <div class="w-14 h-14 bg-indigo-600/20 text-indigo-400 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                                <h2 class="font-bold text-xl text-white">Admin Authentication</h2>
+                                <p class="text-xs text-slate-400 mt-1">Sign in with your manager email to unlock Add, Edit & Delete controls across hotels and bookings.</p>
+                            </div>
+
+                            <form onsubmit="handleAdminLogin(event)" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Manager Email</label>
+                                    <input type="email" id="admin-email" value="manager@luxuryhotels.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Security PIN / Password</label>
+                                    <input type="password" id="admin-password" value="secret123" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-lock-open"></i> Secure Sign In
+                                </button>
+                            </form>
+                        </div>
+                    `;
+                } else {
+                    const hotelKeys = Object.keys(state.hotels);
+                    container.innerHTML = `
+                        <div class="p-5 space-y-6">
+                            <div class="bg-indigo-950/50 border border-indigo-900/50 p-4 rounded-2xl flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+                                        ${state.admin.email.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white">${state.admin.email}</h4>
+                                        <span class="text-[10px] text-emerald-400 font-medium">● Active Admin Session</span>
+                                    </div>
+                                </div>
+                                <button onclick="handleAdminLogout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors">
+                                    Sign Out
+                                </button>
+                            </div>
+
+                            <!-- Hotel Management Section -->
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-bold text-sm text-white">Managed Properties (${hotelKeys.length})</h3>
+                                        <p class="text-[10px] text-slate-400">Add, edit or delete hotels</p>
+                                    </div>
+                                    <button onclick="openAddHotelModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-1">
+                                        <i class="fa-solid fa-plus"></i> Add Hotel
+                                    </button>
+                                </div>
+
+                                <div class="space-y-2.5">
+                                    ${hotelKeys.map(key => {
+                                        const h = state.hotels[key];
+                                        return `
+                                            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
+                                                <div class="flex items-center space-x-3 truncate">
+                                                    <img src="${h.banner}" class="w-10 h-10 rounded-xl object-cover shrink-0">
+                                                    <div class="truncate">
+                                                        <h4 class="text-xs font-bold text-white truncate">${h.name}</h4>
+                                                        <p class="text-[10px] text-slate-400 truncate">${h.location} • ${h.rooms} Rooms</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center space-x-1 shrink-0">
+                                                    <button onclick="openEditHotelModal('${key}')" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center justify-center text-xs" title="Edit Hotel">
+                                                        <i class="fa-solid fa-pen"></i>
+                                                    </button>
+                                                    ${hotelKeys.length > 1 ? `
+                                                        <button onclick="deleteHotel('${key}')" class="w-8 h-8 rounded-lg bg-red-950/50 text-red-400 hover:bg-red-900/50 flex items-center justify-center text-xs" title="Delete Hotel">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Booking Management Section -->
+                            <div class="space-y-3 pt-2">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-bold text-sm text-white">Customer Reservations (${state.bookings.length})</h3>
+                                        <p class="text-[10px] text-slate-400">Incoming guest bookings</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2.5">
+                                    ${state.bookings.map(b => {
+                                        const h = state.hotels[b.hotelId] || { name: 'Resort' };
+                                        return `
+                                            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl space-y-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-bold text-indigo-400">${b.id}</span>
+                                                    <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-900 px-2 py-0.5 rounded-full font-semibold">${b.status}</span>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-white">${b.guestName} (${b.email})</h4>
+                                                    <p class="text-[10px] text-slate-400">${h.name} • ${b.room}</p>
+                                                    <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-calendar"></i> ${b.checkIn} to ${b.checkOut}</p>
+                                                </div>
+                                                <div class="flex justify-end pt-1">
+                                                    <button onclick="cancelBooking('${b.id}')" class="text-[10px] text-red-400 hover:underline font-medium">Cancel Booking</button>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                    ${state.bookings.length === 0 ? `
+                                        <p class="text-xs text-slate-500 text-center py-4">No active customer reservations.</p>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Customer Booking Submission
+        async function handleCustomerBooking(e) {
+            e.preventDefault();
+            const name = document.getElementById('book-name').value;
+            const email = document.getElementById('book-email').value;
+            const checkIn = document.getElementById('book-checkin').value;
+            const checkOut = document.getElementById('book-checkout').value;
+            const room = document.getElementById('book-room').value;
+
+            const newBooking = {
+                id: 'BK-' + Math.floor(1000 + Math.random() * 9000),
+                hotelId: state.currentHotelId,
+                hotelName: state.hotels[state.currentHotelId]?.name || 'Hotel',
+                guestName: name,
+                email,
+                checkIn,
+                checkOut,
+                room,
+                status: 'Confirmed',
+                createdAt: new Date().toISOString()
+            };
+
+            // Save to Firebase Firestore if SDK is loaded
+            if (window.db && window.addDoc && window.collection) {
+                try {
+                    const docRef = await window.addDoc(window.collection(window.db, "bookings"), newBooking);
+                    console.log("Booking saved to Firebase with ID: ", docRef.id);
+                } catch (err) {
+                    console.error("Firebase store error: ", err);
+                }
+            }
+
+            state.bookings.unshift(newBooking);
+            showToast('Reservation confirmed & saved to Firebase!');
+            switchTab('overview');
+        }
+
+        // Cancel Booking
+        function cancelBooking(bookingId) {
+            state.bookings = state.bookings.filter(b => b.id !== bookingId);
+            renderCurrentView();
+            showToast('Booking cancelled.');
+        }
+
+        // Admin Auth Actions
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            state.admin.isAuthenticated = true;
+            state.admin.email = email;
+            renderCurrentView();
+            showToast(`Signed in successfully as ${email}`);
+        }
+
+        function handleAdminLogout() {
+            state.admin.isAuthenticated = false;
+            state.admin.email = null;
+            renderCurrentView();
+            showToast('Signed out from Admin console.');
+        }
+
+        // Modal Controls
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function openAddPhotoModal() {
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-white">Add New Photo</h3>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form onsubmit="addPhoto(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Photo Title</label>
+                        <input type="text" id="photo-title" placeholder="e.g., Executive Suite Lobby" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Image URL</label>
+                        <input type="url" id="photo-url" placeholder="https://images.unsplash.com/..." required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl shadow-md">Upload Photo</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function openAddAmenityModal() {
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-white">Add New Amenity</h3>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form onsubmit="addAmenity(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Amenity Name</label>
+                        <input type="text" id="amenity-name" placeholder="e.g., Tennis Court" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Category</label>
+                        <select id="amenity-category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Wellness">Wellness</option>
+                            <option value="Leisure">Leisure</option>
+                            <option value="Connectivity">Connectivity</option>
+                            <option value="Food & Drink">Food & Drink</option>
+                            <option value="Services">Services</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">FontAwesome Icon Class</label>
+                        <input type="text" id="amenity-icon" value="fa-circle-check" placeholder="fa-wifi, fa-spa, etc." required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl shadow-md">Save Amenity</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function openAddHotelModal() {
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-white">Add New Hotel</h3>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form onsubmit="createHotel(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Hotel Name</label>
+                        <input type="text" id="new-hotel-name" placeholder="e.g., Sunset Bay Villas" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Location</label>
+                        <input type="text" id="new-hotel-location" placeholder="e.g., Honolulu, Hawaii" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Banner Image URL</label>
+                        <input type="url" id="new-hotel-banner" value="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-xl shadow-md">Create Hotel</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function openEditHotelModal(hotelKey) {
+            const h = state.hotels[hotelKey];
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-white">Edit Hotel Settings</h3>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form onsubmit="updateHotel(event, '${hotelKey}')" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Hotel Name</label>
+                        <input type="text" id="edit-hotel-name" value="${h.name}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Location</label>
+                        <input type="text" id="edit-hotel-location" value="${h.location}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Rooms</label>
+                            <input type="number" id="edit-hotel-rooms" value="${h.rooms}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Rating</label>
+                            <input type="text" id="edit-hotel-rating" value="${h.rating}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Banner URL</label>
+                        <input type="url" id="edit-hotel-banner" value="${h.banner}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl shadow-md">Save Changes</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        // CRUD Actions
+        function addPhoto(e) {
+            e.preventDefault();
+            const title = document.getElementById('photo-title').value;
+            const url = document.getElementById('photo-url').value;
+            const hotel = state.hotels[state.currentHotelId];
+            
+            hotel.gallery.unshift({ id: Date.now(), title, url });
+            closeModal();
+            renderCurrentView();
+            showToast('Photo added successfully!');
+        }
+
+        function deletePhoto(photoId) {
+            const hotel = state.hotels[state.currentHotelId];
+            hotel.gallery = hotel.gallery.filter(p => p.id !== photoId);
+            renderCurrentView();
+            showToast('Photo removed.');
+        }
+
+        function addAmenity(e) {
+            e.preventDefault();
+            const name = document.getElementById('amenity-name').value;
+            const category = document.getElementById('amenity-category').value;
+            let icon = document.getElementById('amenity-icon').value.trim();
+            if(!icon.startsWith('fa-')) icon = 'fa-' + icon;
+
+            const hotel = state.hotels[state.currentHotelId];
+            hotel.amenities.push({ id: Date.now(), name, category, icon });
+            closeModal();
+            renderCurrentView();
+            showToast('Amenity added successfully!');
+        }
+
+        function deleteAmenity(amenityId) {
+            const hotel = state.hotels[state.currentHotelId];
+            hotel.amenities = hotel.amenities.filter(a => a.id !== amenityId);
+            renderCurrentView();
+            showToast('Amenity removed.');
+        }
+
+        function createHotel(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-hotel-name').value;
+            const location = document.getElementById('new-hotel-location').value;
+            const banner = document.getElementById('new-hotel-banner').value;
+            const newKey = 'hotel_' + Date.now();
+
+            state.hotels[newKey] = {
+                id: newKey,
+                name,
+                tagline: 'Newly added luxury property.',
+                location,
+                rating: '5.0',
+                rooms: 50,
+                status: 'Now Accepting Reservations',
+                banner,
+                roomTypes: [{ name: 'Standard Suite', price: 290 }],
+                gallery: [],
+                amenities: [
+                    { id: 1, name: 'High-Speed Wi-Fi', icon: 'fa-wifi', category: 'Connectivity' }
+                ]
+            };
+
+            state.currentHotelId = newKey;
+            closeModal();
+            renderCurrentView();
+            showToast(`Created new hotel: ${name}`);
+        }
+
+        function updateHotel(e, hotelKey) {
+            e.preventDefault();
+            const h = state.hotels[hotelKey];
+            h.name = document.getElementById('edit-hotel-name').value;
+            h.location = document.getElementById('edit-hotel-location').value;
+            h.rooms = parseInt(document.getElementById('edit-hotel-rooms').value) || 50;
+            h.rating = document.getElementById('edit-hotel-rating').value;
+            h.banner = document.getElementById('edit-hotel-banner').value;
+
+            closeModal();
+            renderCurrentView();
+            showToast('Hotel updated successfully!');
+        }
+
+        function deleteHotel(hotelKey) {
+            if (Object.keys(state.hotels).length <= 1) {
+                showToast('You must keep at least one hotel.');
+                return;
+            }
+            delete state.hotels[hotelKey];
+            state.currentHotelId = Object.keys(state.hotels)[0];
+            renderCurrentView();
+            showToast('Hotel deleted.');
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            renderCurrentView();
+        }
+
+        // Handle Chrome Android PWA Installation Event
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+                installBtn.addEventListener('click', async () => {
+                    installBtn.classList.add('hidden');
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        showToast('App installed on home screen!');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
